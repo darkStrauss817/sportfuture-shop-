@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { calculatePriceCents, getProduct, getVariant, listProducts, normalizeEmail } from "./catalog";
 import { EUROPEAN_COUNTRIES } from "./stripe";
+import { PROMO_RATES, promotionForVariant } from "@shared/promotions";
 import { FOOTWEAR_SIZES, availableSizesForProduct, ensureFootwearVariants, isValidSizeSelection, sizesForProduct, variantForSize } from "@shared/productSizes";
 
 describe("SportFuture checkout rules", () => {
@@ -27,18 +28,31 @@ describe("SportFuture checkout rules", () => {
     expect(EUROPEAN_COUNTRIES.length).toBeGreaterThan(25);
   });
 
-  it("gives every listed product a visible 20% to 50% promotion", () => {
+  it("gives every priced product a real 20%, 30% or 40% promotion", () => {
     const page = listProducts({ page: 1, pageSize: 48 });
     expect(page.items).toHaveLength(48);
     for (const product of page.items) {
       for (const variant of product.variants) {
         expect(variant.compare_at_price).toBeTruthy();
-        expect(variant.discount_percent).toBeGreaterThanOrEqual(20);
-        expect(variant.discount_percent).toBeLessThanOrEqual(50);
+        if (Number(variant.compare_at_price) === 0) {
+          expect(variant.price).toBe("0.00");
+          expect(variant.discount_percent).toBe(0);
+          continue;
+        }
+        expect(PROMO_RATES).toContain(variant.discount_percent);
+        expect(Number(variant.price)).toBeLessThan(Number(variant.compare_at_price));
+        expect(Number(variant.price)).toBeCloseTo(Number(variant.compare_at_price) * (1 - Number(variant.discount_percent) / 100), 2);
       }
     }
     const previouslyMissing = getProduct(11207574847830)?.variants[0];
-    expect(previouslyMissing?.discount_percent).toBeGreaterThanOrEqual(20);
+    expect(PROMO_RATES).toContain(previouslyMissing?.discount_percent);
+  });
+
+  it("calculates discounts from the current price without inflating it first", () => {
+    expect(promotionForVariant({ id: 1, price: "100.00" })).toEqual({ discountPercent: 30, salePrice: "70.00", originalPrice: "100.00" });
+    expect(promotionForVariant({ id: 2, price: "99.99" })).toEqual({ discountPercent: 40, salePrice: "59.99", originalPrice: "99.99" });
+    expect(promotionForVariant({ id: 3, price: "45.49" })).toEqual({ discountPercent: 20, salePrice: "36.39", originalPrice: "45.49" });
+    expect(promotionForVariant({ id: 4, price: "0.00" })).toEqual({ discountPercent: 0, salePrice: "0.00", originalPrice: "0.00" });
   });
 
   it("exposes every footwear size from 35 through 46", () => {

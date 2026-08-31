@@ -5,7 +5,7 @@ import { trpc } from "@/lib/trpc";
 import { promotionForVariant } from "@shared/promotions";
 import { ensureFootwearVariants, isFootwearProduct, sizeFromVariant, sizesForProduct, variantForSize } from "@shared/productSizes";
 
-type Variant = { id: number; title: string; option1?: string | null; option2?: string | null; option3?: string | null; price: string; compare_at_price?: string | null; available?: boolean };
+type Variant = { id: number; title: string; option1?: string | null; option2?: string | null; option3?: string | null; price: string; compare_at_price?: string | null; original_price?: string | null; discount_percent?: number; available?: boolean };
 type Product = { id: number; title: string; vendor: string; type: string; tags: string[]; images: string[]; variants: Variant[] };
 type CartItem = { productId: number; variantId: number; quantity: number; size?: string; product: Product; variant: Variant };
 const eur = (cents: number) => new Intl.NumberFormat("pt-PT", { style: "currency", currency: "EUR" }).format(cents / 100);
@@ -15,7 +15,7 @@ const discountPercent = (v?: Variant) => v && v.compare_at_price && Number(v.com
 export default function Home() {
   const [page, setPage] = useState(1), [tag, setTag] = useState<string | undefined>(), [query, setQuery] = useState("");
   const [cartOpen, setCartOpen] = useState(false), [menuOpen, setMenuOpen] = useState(false);
-  const [cart, setCart] = useState<CartItem[]>(() => { try { const stored = JSON.parse(localStorage.getItem("sportfuture-cart") || "[]") as CartItem[]; return stored.map(item => { const normalizedProduct = { ...item.product, variants: ensureFootwearVariants(item.product) }; const inferredSize = item.size ?? sizeFromVariant(normalizedProduct, item.variant); const realVariant = (inferredSize ? variantForSize(normalizedProduct, inferredSize) ?? item.variant : item.variant) as Variant; return { ...item, product: normalizedProduct, size: inferredSize, variant: { ...realVariant, compare_at_price: promotionForVariant(realVariant).originalPrice } }; }); } catch { return []; } });
+  const [cart, setCart] = useState<CartItem[]>(() => { try { const stored = JSON.parse(localStorage.getItem("sportfuture-cart") || "[]") as CartItem[]; return stored.map(item => { const normalizedProduct = { ...item.product, variants: ensureFootwearVariants(item.product) }; const inferredSize = item.size ?? sizeFromVariant(normalizedProduct, item.variant); const realVariant = (inferredSize ? variantForSize(normalizedProduct, inferredSize) ?? item.variant : item.variant) as Variant; const promotion = promotionForVariant(realVariant); return { ...item, product: normalizedProduct, size: inferredSize, variant: { ...realVariant, price: promotion.salePrice, compare_at_price: promotion.originalPrice, original_price: promotion.originalPrice, discount_percent: promotion.discountPercent } }; }); } catch { return []; } });
   const [selected, setSelected] = useState<Product | null>(null), [variantId, setVariantId] = useState<number | null>(null), [selectedSize, setSelectedSize] = useState("");
   const [coupon, setCoupon] = useState(""), [email, setEmail] = useState("");
   const catalog = trpc.catalog.list.useQuery({ page, pageSize: 24, tag, query: query || undefined });

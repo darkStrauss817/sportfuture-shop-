@@ -36,7 +36,7 @@ function withPromotions(product: CatalogProduct): CatalogProduct {
     ...product,
     variants: normalizedVariants.map(variant => {
       const promotion = promotionForVariant(variant);
-      return { ...variant, compare_at_price: promotion.originalPrice, original_price: promotion.originalPrice, discount_percent: promotion.discountPercent };
+      return { ...variant, price: promotion.salePrice, compare_at_price: promotion.originalPrice, original_price: promotion.originalPrice, discount_percent: promotion.discountPercent };
     }),
   };
 }
