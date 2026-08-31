@@ -1,0 +1,12 @@
+name = "sportfuture-shop"
+compatibility_date = "2026-08-31"
+pages_build_output_dir = "dist/public"
+
+# Depois de criar a base D1, substitui o valor abaixo pelo database_id real.
+[[d1_databases]]
+binding = "DB"
+database_name = "sportfuture-db"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+# STRIPE_SECRET_KEY e STRIPE_WEBHOOK_SECRET devem ser configuradas como Secrets
+# no painel Cloudflare Pages, nunca neste ficheiro nem no GitHub.

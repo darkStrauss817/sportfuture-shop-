@@ -1,0 +1,1 @@
+ALTER TABLE `orderItems` ADD `size` varchar(8);

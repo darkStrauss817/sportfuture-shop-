@@ -1,0 +1,6 @@
+import { Link, useLocation } from "wouter";
+
+export default function CheckoutStatus({ cancelled = false }: { cancelled?: boolean }) {
+  const [, navigate] = useLocation();
+  return <main className="flex min-h-screen items-center justify-center bg-[#f6f6f3] px-5 text-[#111]"><section className="w-full max-w-xl border-t-4 border-black py-12"><p className="text-[10px] font-bold uppercase tracking-[.25em] text-black/50">SportFuture · Stripe Checkout</p><h1 className="mt-5 text-[clamp(3.5rem,13vw,6rem)] font-black uppercase leading-[.85] tracking-[-.08em]">{cancelled ? "Pagamento cancelado." : "Encomenda confirmada."}</h1><p className="mt-7 max-w-md text-sm leading-7 text-black/60">{cancelled ? "Não foi efetuado qualquer débito. O teu carrinho continua disponível para tentares novamente quando quiseres." : "O pagamento foi recebido pela Stripe. Vais receber a confirmação no email indicado no checkout."}</p><div className="mt-10 flex flex-wrap gap-3"><Link href="/" className="bg-black px-5 py-4 text-[11px] font-bold uppercase tracking-[.15em] text-white">Continuar a comprar</Link>{cancelled && <button onClick={() => navigate("/")} className="border border-black px-5 py-4 text-[11px] font-bold uppercase tracking-[.15em]">Voltar ao catálogo</button>}</div></section></main>;
+}
