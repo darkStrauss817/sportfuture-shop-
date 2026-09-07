@@ -44,7 +44,7 @@ export async function createPendingOrder(env: StoreEnv, input: {
 
 export async function createOrderItems(env: StoreEnv, orderId: number, items: Array<{ productId: number; variantId: number; productTitle: string; variantTitle: string; size?: string; quantity: number; unitAmountCents: number }>) {
   if (!items.length) return;
-  const statements = items.map(item => env.DB.prepare("INSERT INTO order_items (order_id, product_id, variant_id, product_title, variant_title, size, quantity, unit_amount_cents) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8")
+  const statements = items.map(item => env.DB.prepare("INSERT INTO order_items (order_id, product_id, variant_id, product_title, variant_title, size, quantity, unit_amount_cents) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)")
     .bind(orderId, item.productId, item.variantId, item.productTitle, item.variantTitle, item.size ?? null, item.quantity, item.unitAmountCents));
   await env.DB.batch(statements);
 }
